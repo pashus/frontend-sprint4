@@ -127,3 +127,67 @@ function handleCardFormSubmit(evt) {
 };
 //что происходит при отправке формы
 cardFormElement.addEventListener('submit', handleCardFormSubmit);
+
+//---
+
+function showInputError(formElement, inputElement, errorText) {
+    const errorElement = formElement.querySelector(`.${inputElement.id}-error`)
+    inputElement.classList.add('popup__input_type_error')
+    errorElement.textContent = errorText
+    errorElement.classList.add('popup__error_active')
+    errorElement.classList.remove('popup__error')
+}
+
+function closeInputError(formElement, inputElement) {
+    const errorElement = formElement.querySelector(`.${inputElement.id}-error`)
+    inputElement.classList.remove('popup__input_type_error')
+    errorElement.textContent = ''
+    errorElement.classList.remove('popup__error_active')
+    errorElement.classList.add('popup__error')
+}
+
+function isValidate(formElement, inputElement) {
+    if (!inputElement.validity.valid) {
+        showInputError(formElement, inputElement, inputElement.validationMessage)
+        return false
+    } else {
+        closeInputError(formElement, inputElement)
+        return true
+    }
+}
+
+function toggleButton(inputElementList, buttonElement) {
+    const isFormValid = inputElementList.every(inputElement => {
+        return inputElement.validity.valid
+    })
+    if (isFormValid) {
+        buttonElement.removeAttribute('disabled')
+        buttonElement.classList.remove('popup__button_type_disabled')
+    } else {
+        buttonElement.setAttribute('disabled', 0)
+        buttonElement.classList.add('popup__button_type_disabled')
+    }
+}
+
+function setEventListeners(formElement) {
+    const inputElementList = Array.from(formElement.querySelectorAll('.popup__input'))
+    const buttonElement = formElement.querySelector('.popup__button')
+    inputElementList.forEach((inputElement => {
+        inputElement.addEventListener('input', () => {
+            isValidate(formElement, inputElement)
+            toggleButton(inputElementList, buttonElement)
+        })
+    }))
+}
+
+function enableValidation() {
+    const formElements = Array.from(document.querySelectorAll('.popup__form'))
+    formElements.forEach(formElement => {
+        formElement.addEventListener('submit', evt => {
+            evt.preventDefault()
+        })
+        setEventListeners(formElement)
+    })
+}
+
+enableValidation()

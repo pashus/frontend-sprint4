@@ -1,0 +1,6 @@
+.popup__error_active {
+    display: block;
+    font-weight: 400;
+    font-size: 12px;
+    color: #f00;
+}
