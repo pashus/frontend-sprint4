@@ -1,12 +1,12 @@
+import '../pages/index.css';
+import { initialCards } from './cards.js';
+
 //массив с карточками и контент темплейта
 const placesList = document.querySelector('.places__list')
 const cardTemplate = document.querySelector('#card-template').content
 
 //крестики, закрывающие попапы, псевдомассив
 const closePopup = document.querySelectorAll('.popup__close')
-
-//псевдомассив попапов для закрытия
-const popups = document.querySelectorAll('.popup')
 
 //редактирование профиля попап
 const profilePopup = document.querySelector('.popup_type_edit')
