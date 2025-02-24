@@ -5,6 +5,9 @@ const cardTemplate = document.querySelector('#card-template').content
 //крестики, закрывающие попапы, псевдомассив
 const closePopup = document.querySelectorAll('.popup__close')
 
+//псевдомассив попапов для закрытия
+const popups = document.querySelectorAll('.popup')
+
 //редактирование профиля попап
 const profilePopup = document.querySelector('.popup_type_edit')
 const profileFormElement = profilePopup.querySelector('.popup__form')
@@ -70,15 +73,47 @@ initialCards.forEach(function (item) {
     placesList.append(createCard(item))
 });
 
-//открытие модального окна
+//открытие модального окна и проверка, что он
+//содержит форму, для проверки на валидные инпуты при открытии
 function openModal(popup) {
     popup.classList.add('popup_is-opened');
+    if (popup.querySelector('.popup__form')) {
+        checkPopupInputs(popup)
+    }
+    document.addEventListener('keydown', closeByEsc)
+    popup.addEventListener('click', closeByClick)
 };
+
+//функция проверки заполненности и валидности ИЗНАЧАЛЬНЫХ
+//данных в инпутах
+function checkPopupInputs(popup) {
+    const formElement = popup.querySelector('.popup__form')
+    const inputElementList = Array.from(formElement.querySelectorAll('.popup__input'))
+    const buttonElement = formElement.querySelector('.popup__button')
+    toggleButton(inputElementList, buttonElement)
+}
 
 //закрытие модального окна
 function closeModal(popup) {
     popup.classList.remove('popup_is-opened');
+    document.removeEventListener('keydown', closeByEsc)
+    popup.removeEventListener('click', closeByClick)
 };
+
+//закрытие модального окна через esc
+function closeByEsc(evt) {
+    if (evt.key === 'Escape') {
+        const openedPopup = document.querySelector('.popup_is-opened')
+        closeModal(openedPopup);
+    }
+}
+
+//закрытие модального окна по клику вне его
+function closeByClick(evt) {
+    if (evt.target.classList.contains('popup_is-opened')) {
+        closeModal(evt.target)
+    }
+}
 
 //автозаполнение в модальном окне редактирования профиля и его открытие
 profileEditButton.addEventListener('click', function() {
@@ -102,6 +137,7 @@ function handleProfileFormSubmit(evt) {
     profileDescription.textContent = jobInput.value
     closeModal(profilePopup)
 };
+
 //что происходит при отправке формы
 profileFormElement.addEventListener('submit', handleProfileFormSubmit);
 
@@ -123,13 +159,13 @@ function handleCardFormSubmit(evt) {
     cardNameInput.value = ''
     cardUrlInput.value = ''
     closeModal(cardPopup)
-
 };
+
 //что происходит при отправке формы
 cardFormElement.addEventListener('submit', handleCardFormSubmit);
 
-//---
-
+//добавляет инпуту класс, с которым он становится ошибочным
+//показывает строку с конкретной ошибкой валидации
 function showInputError(formElement, inputElement, errorText) {
     const errorElement = formElement.querySelector(`.${inputElement.id}-error`)
     inputElement.classList.add('popup__input_type_error')
@@ -138,6 +174,7 @@ function showInputError(formElement, inputElement, errorText) {
     errorElement.classList.remove('popup__error')
 }
 
+//отменяет всё из функции показа ошибки
 function closeInputError(formElement, inputElement) {
     const errorElement = formElement.querySelector(`.${inputElement.id}-error`)
     inputElement.classList.remove('popup__input_type_error')
@@ -146,16 +183,16 @@ function closeInputError(formElement, inputElement) {
     errorElement.classList.add('popup__error')
 }
 
+//проверка на валидность
 function isValidate(formElement, inputElement) {
     if (!inputElement.validity.valid) {
         showInputError(formElement, inputElement, inputElement.validationMessage)
-        return false
     } else {
         closeInputError(formElement, inputElement)
-        return true
     }
 }
 
+//изменение кнопки в зависимости от того, валидны ли оба инпута
 function toggleButton(inputElementList, buttonElement) {
     const isFormValid = inputElementList.every(inputElement => {
         return inputElement.validity.valid
@@ -169,6 +206,8 @@ function toggleButton(inputElementList, buttonElement) {
     }
 }
 
+//берет из конкретной формы инпуты и кнопку. для инпутов вызывает
+//функцию изменения кнопок. для конкретного инпута смотрит валиден ли он
 function setEventListeners(formElement) {
     const inputElementList = Array.from(formElement.querySelectorAll('.popup__input'))
     const buttonElement = formElement.querySelector('.popup__button')
@@ -180,6 +219,7 @@ function setEventListeners(formElement) {
     }))
 }
 
+//смотрит все формы на странице, для каждой вызывает функцию setEventListeners
 function enableValidation() {
     const formElements = Array.from(document.querySelectorAll('.popup__form'))
     formElements.forEach(formElement => {
@@ -189,5 +229,4 @@ function enableValidation() {
         setEventListeners(formElement)
     })
 }
-
 enableValidation()
