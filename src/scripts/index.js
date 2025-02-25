@@ -1,9 +1,12 @@
 import '../pages/index.css';
-import { initialCards } from './cards.js';
+import {initialCards} from './cards.js';
+import {enableValidation} from '../components/validate.js'
+import {openModal, closeModal} from '../components/modal.js'
+import {createCard} from '../components/card.js'
 
 //массив с карточками и контент темплейта
 const placesList = document.querySelector('.places__list')
-const cardTemplate = document.querySelector('#card-template').content
+export const cardTemplate = document.querySelector('#card-template').content
 
 //крестики, закрывающие попапы, псевдомассив
 const closePopup = document.querySelectorAll('.popup__close')
@@ -21,9 +24,7 @@ const cardNameInput = cardPopup.querySelector('.popup__input_type_card-name')
 const cardUrlInput = cardPopup.querySelector('.popup__input_type_url')
 
 //картинка у карточки попап
-const imagePopup = document.querySelector('.popup_type_image')
-const cardPopupImage = imagePopup.querySelector('.popup__image')
-const cardPopupCaption = imagePopup.querySelector('.popup__caption')
+export const imagePopup = document.querySelector('.popup_type_image')
 
 //элементы профиля
 const profileEditButton = document.querySelector('.profile__edit-button')
@@ -36,84 +37,10 @@ profilePopup.classList.add('popup_is-animated')
 cardPopup.classList.add('popup_is-animated')
 imagePopup.classList.add('popup_is-animated')
 
-//создание карточки, на вход подается объект из ключей name и link
-function createCard(data) {
-    const cardElement = cardTemplate.cloneNode(true)
-    const cardImage = cardElement.querySelector('.card__image')
-    const cardTitle = cardElement.querySelector('.card__title')
-    const deleteButton = cardElement.querySelector('.card__delete-button')
-    const likeButton = cardElement.querySelector('.card__like-button')
-
-    cardTitle.textContent = data.name
-    cardImage.src = data.link
-    cardImage.alt = data.name
-
-    //лайк в карточке
-    likeButton.addEventListener('click', function(evt) {
-        evt.target.classList.toggle('card__like-button_is-active')
-    });
-
-    //удаление карточки
-    deleteButton.addEventListener('click', function(evt) {
-        evt.target.closest('.card').remove()
-    });
-
-    //открытие картинки попап
-    cardImage.addEventListener('click', function() {
-        cardPopupImage.src = cardImage.src
-        cardPopupCaption.textContent = cardTitle.textContent
-        openModal(imagePopup)
-    });
-
-    return cardElement;
-};
-
 //6 начальных карточек из массива
 initialCards.forEach(function (item) {
     placesList.append(createCard(item))
 });
-
-//открытие модального окна и проверка, что он
-//содержит форму, для проверки на валидные инпуты при открытии
-function openModal(popup) {
-    popup.classList.add('popup_is-opened');
-    if (popup.querySelector('.popup__form')) {
-        checkPopupInputs(popup)
-    }
-    document.addEventListener('keydown', closeByEsc)
-    popup.addEventListener('click', closeByClick)
-};
-
-//функция проверки заполненности и валидности ИЗНАЧАЛЬНЫХ
-//данных в инпутах
-function checkPopupInputs(popup) {
-    const formElement = popup.querySelector('.popup__form')
-    const inputElementList = Array.from(formElement.querySelectorAll('.popup__input'))
-    const buttonElement = formElement.querySelector('.popup__button')
-    toggleButton(inputElementList, buttonElement)
-}
-
-//закрытие модального окна
-function closeModal(popup) {
-    popup.classList.remove('popup_is-opened');
-    document.removeEventListener('keydown', closeByEsc)
-    popup.removeEventListener('click', closeByClick)
-};
-
-//закрытие модального окна через esc
-function closeByEsc(evt) {
-    if (evt.key === 'Escape') {
-        const openedPopup = document.querySelector('.popup_is-opened')
-        closeModal(openedPopup);
-    }
-}
-
-//закрытие модального окна по клику вне его
-function closeByClick(evt) {
-    if (evt.target.classList.contains('popup_is-opened')) {
-        closeModal(evt.target)
-    }
-}
 
 //автозаполнение в модальном окне редактирования профиля и его открытие
 profileEditButton.addEventListener('click', function() {
@@ -129,6 +56,11 @@ closePopup.forEach(function (item) {
     })
 });
 
+//открытие попапа создания карточки
+cardAddButton.addEventListener('click', function() {
+    openModal(cardPopup)
+});
+
 //имя и текст на главном экране как в форме, 
 // которую заполняют в попапе, и закрытие попапа
 function handleProfileFormSubmit(evt) {
@@ -137,14 +69,8 @@ function handleProfileFormSubmit(evt) {
     profileDescription.textContent = jobInput.value
     closeModal(profilePopup)
 };
-
 //что происходит при отправке формы
 profileFormElement.addEventListener('submit', handleProfileFormSubmit);
-
-//открытие попапа создания карточки
-cardAddButton.addEventListener('click', function() {
-    openModal(cardPopup)
-});
 
 //создание объекта из имени и ссылки на картинку,
 //данные которых вводятся в форме (в попапе редактирования карточек)
@@ -160,73 +86,17 @@ function handleCardFormSubmit(evt) {
     cardUrlInput.value = ''
     closeModal(cardPopup)
 };
-
 //что происходит при отправке формы
 cardFormElement.addEventListener('submit', handleCardFormSubmit);
 
-//добавляет инпуту класс, с которым он становится ошибочным
-//показывает строку с конкретной ошибкой валидации
-function showInputError(formElement, inputElement, errorText) {
-    const errorElement = formElement.querySelector(`.${inputElement.id}-error`)
-    inputElement.classList.add('popup__input_type_error')
-    errorElement.textContent = errorText
-    errorElement.classList.add('popup__error_active')
-    errorElement.classList.remove('popup__error')
+const validationSettings = {
+    formElements: '.popup__form',
+    inputElementList: '.popup__input',
+    buttonElement: '.popup__button',
+    inactiveButtonClass: 'popup__button_type_disabled',
+    inputErrorClass: 'popup__input_type_error',
+    errorTextClass: 'popup__error',
+    errorTextClassActive: 'popup__error_active'
 }
 
-//отменяет всё из функции показа ошибки
-function closeInputError(formElement, inputElement) {
-    const errorElement = formElement.querySelector(`.${inputElement.id}-error`)
-    inputElement.classList.remove('popup__input_type_error')
-    errorElement.textContent = ''
-    errorElement.classList.remove('popup__error_active')
-    errorElement.classList.add('popup__error')
-}
-
-//проверка на валидность
-function isValidate(formElement, inputElement) {
-    if (!inputElement.validity.valid) {
-        showInputError(formElement, inputElement, inputElement.validationMessage)
-    } else {
-        closeInputError(formElement, inputElement)
-    }
-}
-
-//изменение кнопки в зависимости от того, валидны ли оба инпута
-function toggleButton(inputElementList, buttonElement) {
-    const isFormValid = inputElementList.every(inputElement => {
-        return inputElement.validity.valid
-    })
-    if (isFormValid) {
-        buttonElement.removeAttribute('disabled')
-        buttonElement.classList.remove('popup__button_type_disabled')
-    } else {
-        buttonElement.setAttribute('disabled', 0)
-        buttonElement.classList.add('popup__button_type_disabled')
-    }
-}
-
-//берет из конкретной формы инпуты и кнопку. для инпутов вызывает
-//функцию изменения кнопок. для конкретного инпута смотрит валиден ли он
-function setEventListeners(formElement) {
-    const inputElementList = Array.from(formElement.querySelectorAll('.popup__input'))
-    const buttonElement = formElement.querySelector('.popup__button')
-    inputElementList.forEach((inputElement => {
-        inputElement.addEventListener('input', () => {
-            isValidate(formElement, inputElement)
-            toggleButton(inputElementList, buttonElement)
-        })
-    }))
-}
-
-//смотрит все формы на странице, для каждой вызывает функцию setEventListeners
-function enableValidation() {
-    const formElements = Array.from(document.querySelectorAll('.popup__form'))
-    formElements.forEach(formElement => {
-        formElement.addEventListener('submit', evt => {
-            evt.preventDefault()
-        })
-        setEventListeners(formElement)
-    })
-}
-enableValidation()
+enableValidation(validationSettings)
