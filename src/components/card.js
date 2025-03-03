@@ -9,9 +9,9 @@ export function createCard(data) {
     const cardTitle = cardElement.querySelector('.card__title')
     const deleteButton = cardElement.querySelector('.card__delete-button')
     const likeButton = cardElement.querySelector('.card__like-button')
+    const likeCount = cardElement.querySelector('.card__like-count')
     const cardPopupImage = imagePopup.querySelector('.popup__image')
     const cardPopupCaption = imagePopup.querySelector('.popup__caption')    
-    const likeCount = cardElement.querySelector('.card__like-count')
 
     cardTitle.textContent = data.name
     cardImage.src = data.link

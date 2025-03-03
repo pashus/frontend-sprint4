@@ -22,6 +22,19 @@ const handleError = (err) => {
     return console.log(`Ошибка: ${err}`)
 }
 
+//две функции для кнопки сохранения
+const setButtonLoading = (formElement) => {
+    const button = formElement.querySelector('.button');
+    button.dataset.defaultText = button.textContent;
+    button.textContent = "Сохранение...";
+    button.disabled = true;
+};
+const resetButtonLoading = (formElement) => {
+    const button = formElement.querySelector('.button');
+    button.textContent = "Сохранить";
+    button.disabled = false;
+};
+
 export const getCards = (placesList) => {
     return fetch(`${config.baseUrl}/cards`, {
         headers: config.headers
@@ -33,7 +46,8 @@ export const getCards = (placesList) => {
         .catch(handleError)
 };
 
-export const postCards = (newCard, placesList, cardFormElement, cardPopup) => {
+export const postCards = (newCard, placesList, formElement, cardPopup) => {
+    setButtonLoading(formElement)
     return fetch(`${config.baseUrl}/cards`, {
         method: 'POST',
         headers: config.headers,
@@ -42,11 +56,12 @@ export const postCards = (newCard, placesList, cardFormElement, cardPopup) => {
         .then(handleResponse)
         .then(cardData => {
             placesList.prepend(createCard(cardData)); 
-            cardFormElement.reset()
+            formElement.reset()
             console.log(cardData) 
             closeModal(cardPopup); 
         })
         .catch(handleError)
+        .finally(() => resetButtonLoading(formElement))
 };
 
 export const getUserId = () => {
@@ -73,7 +88,8 @@ export const getUserData = (profileName, profileDescription, profileImage) => {
         .catch(handleError)
 };
 
-export const updateName = (nameInput, jobInput) => {
+export const updateName = (nameInput, jobInput, profileName, profileDescription, profilePopup, formElement) => {
+    setButtonLoading(formElement)
     fetch(`${config.baseUrl}/users/me`, {
         method: 'PATCH',
         headers: config.headers,
@@ -83,8 +99,13 @@ export const updateName = (nameInput, jobInput) => {
         })
     })
         .then(handleResponse)
-        .then(data => console.log(data))
+        .then(() => {
+            profileName.textContent = nameInput.value
+            profileDescription.textContent = jobInput.value
+            closeModal(profilePopup)
+        })
         .catch(handleError)
+        .finally(() => resetButtonLoading(formElement))
 };
 
 export const updateLike = (method, likeCount, idData, evt) => {
@@ -112,7 +133,8 @@ export const deleteCard = (idData, evt) => {
         .catch(handleError)
 }
 
-export const updateAvatar = (avatarInputLink, profileImage, avatarFormElement) => {
+export const updateAvatar = (avatarInputLink, profileImage, formElement, avatarPopup) => {
+    setButtonLoading(formElement)
     fetch(`${config.baseUrl}/users/me/avatar`, {
         method: 'PATCH',
         headers: config.headers,
@@ -123,7 +145,9 @@ export const updateAvatar = (avatarInputLink, profileImage, avatarFormElement) =
         .then(handleResponse)
         .then(() => {
             profileImage.setAttribute('style', `background-image: url('${avatarInputLink}');`);
-            avatarFormElement.reset()
+            formElement.reset()
+            closeModal(avatarPopup)
         })
         .catch(handleError)
+        .finally(() => resetButtonLoading(formElement))
 }

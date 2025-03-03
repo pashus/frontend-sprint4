@@ -56,51 +56,45 @@ getUserId().then(id => {
 //получение имени пользователя и описания 
 getUserData(profileName, profileDescription, profileImage)
 
-//открытие модального окно аватара
-profileImage.addEventListener('click', () => {
-    openModal(avatarPopup)
-})
-
-//обновление аватарки
-function handleAvatarFormSubmit(evt) {
-    evt.preventDefault(); 
-    updateAvatar(avatarUrlInput.value, profileImage, avatarFormElement)
-    closeModal(avatarPopup)
-};
-//что происходит при отправке формы
-avatarFormElement.addEventListener('submit', handleAvatarFormSubmit);
-
-//автозаполнение в модальном окне редактирования профиля и его открытие
-profileEditButton.addEventListener('click', function() {
-    nameInput.value = profileName.textContent
-    jobInput.value = profileDescription.textContent
-    openModal(profilePopup);
-});
-
 //при нажатии на крестик закрываются попапы
 closePopup.forEach(function (item) {
-    item.addEventListener('click', function() {
+    item.addEventListener('click', () => {
         closeModal(item.closest('.popup'))
     })
 });
 
-//открытие попапа создания карточки
-cardAddButton.addEventListener('click', function() {
-    openModal(cardPopup)
-});
 
+//открытие модального окно аватара
+profileImage.addEventListener('click', () => {
+    openModal(avatarPopup)
+})
+//обновление аватарки
+function handleAvatarFormSubmit(evt) {
+    evt.preventDefault(); 
+    updateAvatar(avatarUrlInput.value, profileImage, avatarFormElement, avatarPopup)
+};
+avatarFormElement.addEventListener('submit', handleAvatarFormSubmit);
+
+
+//открытие модального окна редактирования профиля и автозаполнение
+profileEditButton.addEventListener('click', () => {
+    nameInput.value = profileName.textContent
+    jobInput.value = profileDescription.textContent
+    openModal(profilePopup);
+});
 //имя и текст на главном экране как в форме, 
 // которую заполняют в попапе, и закрытие попапа
 function handleProfileFormSubmit(evt) {
     evt.preventDefault(); 
-    updateName(nameInput, jobInput)
-    profileName.textContent = nameInput.value
-    profileDescription.textContent = jobInput.value
-    closeModal(profilePopup)
+    updateName(nameInput, jobInput, profileName, profileDescription, profilePopup, profileFormElement)
 };
-//что происходит при отправке формы
 profileFormElement.addEventListener('submit', handleProfileFormSubmit);
 
+
+//открытие попапа создания карточки
+cardAddButton.addEventListener('click', () => {
+    openModal(cardPopup)
+});
 //создание объекта из имени и ссылки на картинку,
 //данные которых вводятся в форме (в попапе редактирования карточек)
 //очистка инпутов формы и закрытие попапа
@@ -112,8 +106,6 @@ function handleCardFormSubmit(evt) {
     }
     postCards(newCard, placesList, cardFormElement, cardPopup)
 };
-
-//что происходит при отправке формы
 cardFormElement.addEventListener('submit', handleCardFormSubmit);
 
 const validationSettings = {
