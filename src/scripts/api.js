@@ -9,15 +9,28 @@ const config = {
     }
 };
 
+//общая проверка ответа
+const handleResponse = (res) => {
+    if (!res.ok) {
+        return Promise.reject(`Ошибка: ${res.status}`);
+    }
+    return res.json();
+};
+
+//общий обработчик ошибки
+const handleError = (err) => {
+    return console.log(`Ошибка: ${err}`)
+}
+
 export const getCards = (placesList) => {
     return fetch(`${config.baseUrl}/cards`, {
         headers: config.headers
     })
-        .then(res => res.json())
+        .then(handleResponse)
         .then((data) => data.forEach(item => {
             placesList.append(createCard(item))
         }))
-        .catch(err => console.log(`Ошибка: ${err}`))
+        .catch(handleError)
 };
 
 export const postCards = (newCard, placesList, cardFormElement, cardPopup) => {
@@ -26,19 +39,14 @@ export const postCards = (newCard, placesList, cardFormElement, cardPopup) => {
         headers: config.headers,
         body: JSON.stringify(newCard)
     })
-        .then(res => {
-            if (!res.ok) {
-                return Promise.reject(`Ошибка: ${res.status}`);
-            }
-            return res.json();
-        })
+        .then(handleResponse)
         .then(cardData => {
             placesList.prepend(createCard(cardData)); 
-            console.log(cardData)
-            cardFormElement.reset() 
+            cardFormElement.reset()
+            console.log(cardData) 
             closeModal(cardPopup); 
         })
-        .catch(err => console.log(`Ошибка: ${err}`))
+        .catch(handleError)
 };
 
 export const getUserId = () => {
@@ -46,9 +54,9 @@ export const getUserId = () => {
         method: 'GET',
         headers: config.headers
     })
-        .then(res => res.json())
+        .then(handleResponse)
         .then(userData => userData._id)
-        .catch(err => console.log(`Ошибка: ${err}`))
+        .catch(handleError)
 }
 
 export const getUserData = (profileName, profileDescription, profileImage) => {
@@ -56,13 +64,13 @@ export const getUserData = (profileName, profileDescription, profileImage) => {
         method: 'GET',
         headers: config.headers
     })
-        .then(res => res.json())
+        .then(handleResponse)
         .then(userData => {
             profileName.textContent = userData.name
             profileDescription.textContent = userData.about
             profileImage.setAttribute('style', `background-image: url('${userData.avatar}');`);
         })
-        .catch(err => console.log(`Ошибка: ${err}`))
+        .catch(handleError)
 };
 
 export const updateName = (nameInput, jobInput) => {
@@ -74,9 +82,9 @@ export const updateName = (nameInput, jobInput) => {
             about: jobInput.value
         })
     })
-        .then(res => res.json())
+        .then(handleResponse)
         .then(data => console.log(data))
-        .catch(err => console.log(`Ошибка: ${err}`))
+        .catch(handleError)
 };
 
 export const updateLike = (method, likeCount, idData, evt) => {
@@ -84,10 +92,38 @@ export const updateLike = (method, likeCount, idData, evt) => {
         method: method,
         headers: config.headers
     })
-        .then(res => res.json())
+        .then(handleResponse)
         .then(data => {
             likeCount.textContent = data.likes.length
             evt.target.classList.toggle('card__like-button_is-active')
         })
-        .catch(err => console.log(`Ошибка: ${err}`))
+        .catch(handleError)
 };
+
+export const deleteCard = (idData, evt) => {
+    fetch(`${config.baseUrl}/cards/${idData}`, {
+        method: 'DELETE',
+        headers: config.headers
+    })
+        .then(handleResponse)
+        .then(() => {
+            evt.target.closest('.card').remove()
+        })
+        .catch(handleError)
+}
+
+export const updateAvatar = (avatarInputLink, profileImage, avatarFormElement) => {
+    fetch(`${config.baseUrl}/users/me/avatar`, {
+        method: 'PATCH',
+        headers: config.headers,
+        body: JSON.stringify({
+            avatar: avatarInputLink
+        })
+    })
+        .then(handleResponse)
+        .then(() => {
+            profileImage.setAttribute('style', `background-image: url('${avatarInputLink}');`);
+            avatarFormElement.reset()
+        })
+        .catch(handleError)
+}

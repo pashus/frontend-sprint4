@@ -1,8 +1,8 @@
 import {openModal} from '../components/modal.js'
 import {cardTemplate, imagePopup, userId} from '../scripts/index.js'
-import {updateLike} from '../scripts/api.js'
+import {updateLike, deleteCard} from '../scripts/api.js'
 
-//создание карточки, на вход подается объект из ключей name и link
+//создание карточки
 export function createCard(data) {
     const cardElement = cardTemplate.cloneNode(true)
     const cardImage = cardElement.querySelector('.card__image')
@@ -32,8 +32,13 @@ export function createCard(data) {
     });
 
     //удаление карточки
+    //проверка на то, моя ли это карточка
+    if (!(data.owner._id === userId)) {
+        deleteButton.remove()
+    }
+    
     deleteButton.addEventListener('click', function(evt) {
-        evt.target.closest('.card').remove()
+        deleteCard(data._id, evt)
     });
 
     //открытие картинки попап

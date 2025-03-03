@@ -1,7 +1,7 @@
 import '../pages/index.css';
 import {enableValidation} from '../components/validate.js'
 import {openModal, closeModal} from '../components/modal.js'
-import {getCards, postCards, getUserData, updateName, getUserId} from './api.js'
+import {getCards, postCards, getUserData, updateName, getUserId, updateAvatar} from './api.js'
 
 export let userId;
 
@@ -27,6 +27,11 @@ const cardUrlInput = cardPopup.querySelector('.popup__input_type_url')
 //картинка у карточки попап
 export const imagePopup = document.querySelector('.popup_type_image')
 
+//редактирование аватара попап
+export const avatarPopup = document.querySelector('.popup_type_avatar')
+const avatarFormElement = avatarPopup.querySelector('.popup__form')
+const avatarUrlInput = avatarPopup.querySelector('.popup__input_type_avatar-url')
+
 //элементы профиля
 const profileEditButton = document.querySelector('.profile__edit-button')
 const cardAddButton = document.querySelector('.profile__add-button')
@@ -39,16 +44,31 @@ profilePopup.classList.add('popup_is-animated')
 cardPopup.classList.add('popup_is-animated')
 imagePopup.classList.add('popup_is-animated')
 
+//----------------------------------------------//
+
 //id пользователя
+//добавление всех карточек с сервера только после получения id
 getUserId().then(id => {
     userId = id;
+    getCards(placesList)
 });
-
-//добавление всех карточек с сервера
-getCards(placesList)
 
 //получение имени пользователя и описания 
 getUserData(profileName, profileDescription, profileImage)
+
+//открытие модального окно аватара
+profileImage.addEventListener('click', () => {
+    openModal(avatarPopup)
+})
+
+//обновление аватарки
+function handleAvatarFormSubmit(evt) {
+    evt.preventDefault(); 
+    updateAvatar(avatarUrlInput.value, profileImage, avatarFormElement)
+    closeModal(avatarPopup)
+};
+//что происходит при отправке формы
+avatarFormElement.addEventListener('submit', handleAvatarFormSubmit);
 
 //автозаполнение в модальном окне редактирования профиля и его открытие
 profileEditButton.addEventListener('click', function() {
