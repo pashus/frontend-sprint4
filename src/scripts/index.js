@@ -1,8 +1,9 @@
 import '../pages/index.css';
-import {initialCards} from './cards.js';
 import {enableValidation} from '../components/validate.js'
 import {openModal, closeModal} from '../components/modal.js'
-import {createCard} from '../components/card.js'
+import {getCards, postCards, getUserData, updateName, getUserId} from './api.js'
+
+export let userId;
 
 //массив с карточками и контент темплейта
 const placesList = document.querySelector('.places__list')
@@ -31,16 +32,23 @@ const profileEditButton = document.querySelector('.profile__edit-button')
 const cardAddButton = document.querySelector('.profile__add-button')
 const profileName = document.querySelector('.profile__title')
 const profileDescription = document.querySelector('.profile__description')
+const profileImage = document.querySelector('.profile__image')
 
 //добавление попапам плавных анимаций
 profilePopup.classList.add('popup_is-animated')
 cardPopup.classList.add('popup_is-animated')
 imagePopup.classList.add('popup_is-animated')
 
-//6 начальных карточек из массива
-initialCards.forEach(function (item) {
-    placesList.append(createCard(item))
+//id пользователя
+getUserId().then(id => {
+    userId = id;
 });
+
+//добавление всех карточек с сервера
+getCards(placesList)
+
+//получение имени пользователя и описания 
+getUserData(profileName, profileDescription, profileImage)
 
 //автозаполнение в модальном окне редактирования профиля и его открытие
 profileEditButton.addEventListener('click', function() {
@@ -65,6 +73,7 @@ cardAddButton.addEventListener('click', function() {
 // которую заполняют в попапе, и закрытие попапа
 function handleProfileFormSubmit(evt) {
     evt.preventDefault(); 
+    updateName(nameInput, jobInput)
     profileName.textContent = nameInput.value
     profileDescription.textContent = jobInput.value
     closeModal(profilePopup)
@@ -81,11 +90,9 @@ function handleCardFormSubmit(evt) {
         name: cardNameInput.value,
         link: cardUrlInput.value
     }
-    placesList.prepend(createCard(newCard))
-    cardNameInput.value = ''
-    cardUrlInput.value = ''
-    closeModal(cardPopup)
+    postCards(newCard, placesList, cardFormElement, cardPopup)
 };
+
 //что происходит при отправке формы
 cardFormElement.addEventListener('submit', handleCardFormSubmit);
 
@@ -98,5 +105,4 @@ const validationSettings = {
     errorTextClass: 'popup__error',
     errorTextClassActive: 'popup__error_active'
 }
-
 enableValidation(validationSettings)
